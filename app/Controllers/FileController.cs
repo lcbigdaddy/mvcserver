@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.IO;
+using System.Configuration;
 
 namespace app.Controllers
 {
@@ -15,9 +16,19 @@ namespace app.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            string root_path = Path.Combine(Server.MapPath(""), "ShareFiles");
-            DirectoryInfo dir = new DirectoryInfo(root_path);
             List<Dictionary<string, string>> arr = new List<Dictionary<string, string>>();
+
+            string root_path = ConfigurationManager.AppSettings["file_share_root"].ToString();
+            if (!Directory.Exists(root_path))
+            {
+                root_path = Path.Combine(Server.MapPath(""), root_path);
+                if (!Directory.Exists(root_path))
+                {
+                    return Json(new { Result = 0, Msg = "失败", data = arr }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            DirectoryInfo dir = new DirectoryInfo(root_path);
+            
             var map = new Dictionary<string, string>();
             foreach (FileInfo d in dir.GetFiles())
             {
